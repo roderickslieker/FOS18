@@ -1,0 +1,61 @@
+---
+title: "Data integration"
+author: "R.C.Slieker"
+date: "12-10-2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+```
+
+# Hands on practical: Online databases exploration
+
+## Investigate age-related changes across multiple tissues
+
+Over the past years, an enormous amount of omics data has become publically available. This data is freely available and can be used by researchers across the world. In this practical we will download genome-wide DNA methylation data from the Gene Expression Omnibus (GEO). We will use this data to investigate the relation between DNA methylation and age. 
+
+## Load packages
+```{r}
+library(Biobase)
+library(GEOquery)
+library(xlsx)
+```
+
+# Blood dataset
+
+We use a dataset from Tsaprouni **et al.**, this is not the largest blood dataset available on GEO, but for the sae of time we take this dataset. There are different ways to download data from GEO.
+
+Go to https://www.ncbi.nlm.nih.gov/geo/. On the right you can search for datasets. Search for *GSE50660*. This will take you to the page of the dataset. You can see the summary of the data/study, the authors, the paper the data is from, contact details and the number of samples. 
+
+*1.* How many samples are there? What is the tissue the samples were taken from?
+
+There are different ways to get the data. One is GEO2R which allows direct parsing of data in R. You can also manually download the data at the bottom of the page. 
+
+*2.* In what ways is the data available? Which one would you use?
+
+```{r}
+gset.blood <- getGEO("GSE50660", GSEMatrix =TRUE, getGPL=FALSE)
+
+
+temp <- tempfile()
+download.file(url = "https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-1866/E-MTAB-1866.processed.1.zip", temp)
+temp <- tempfile(, fileext=c("zip"))
+brain.data <- read.table(unz(temp, "MuTHER_Fat_450K_norm_AE_030913.txt"), header=T, sep="\t")
+
+gset.brain <- readLines("https://www.ebi.ac.uk/arrayexpress/files/E-MTAB-1866/E-MTAB-1866.processed.1.zip")
+```
+
+
+# Select CpGs
+
+To reduce the time of running the analysis we select a subset of probes. 
+
+```{r}
+xlsx::read.xlsx("https://static-content.springer.com/esm/art%3A10.1186%2Fs13072-018-0191-3/MediaObjects/13072_2018_191_MOESM4_ESM.xlsx")
+```
+
+
+
+
+
+https://static-content.springer.com/esm/art%3A10.1186%2Fs13072-018-0191-3/MediaObjects/13072_2018_191_MOESM14_ESM.xlsx
