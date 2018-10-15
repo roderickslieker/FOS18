@@ -10,7 +10,7 @@ output: pdf_document
 Over the past years, an enormous amount of omics data has become publically available. This data is freely available and can be used by researchers across the world. In this practical we will download genome-wide DNA methylation data from the Gene Expression Omnibus (GEO) for two tissues. We will use this data to investigate the relation between DNA methylation and age. 
 
 ## Load packages
-```{r, message=F, eval=FALSE}
+```{r, message=F, eval=TRUE}
 library(Biobase)
 library(GEOquery)
 library(ggplot2)
@@ -30,14 +30,14 @@ There are different ways to get the data. One is GEO2R which allows direct parsi
 
 Now we download the data from GEO. We can do this  for both accession numbers. Note that this will take a few minutes to download and parse. 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 gset.blood <- getGEO("GSE50660", GSEMatrix =TRUE, getGPL=FALSE)
 gset.buccal <- getGEO("GSE50759", GSEMatrix =TRUE, getGPL=FALSE)
 ```
 
 This is gives back a list with one slot. This contains a ExpressionSet. This is a way to store multiple datatypes/phenotypes in one object. 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 length(gset.blood)
 class(gset.blood[[1]])
 
@@ -47,7 +47,7 @@ eSet.buccal <- gset.buccal[[1]]
 
 We want to extract the DNA methylation levels of this dataset. That can be achieved with `exprs()`. The phenotypes can be extracted with `pheno`, which returns an AnnotatedDataFrame from which the phenotypes can be extracted using @data. See code below. 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 exprs.blood <- exprs(eSet.blood)
 exprs.buccal <- exprs(eSet.buccal)
 
@@ -57,14 +57,14 @@ pheno.buccal <- phenoData(eSet.buccal)@data
 
 **3. The DNA methylation data contains quite some loci. How many (code below)? Are the number of loci measured equal? If not, why do you think not? **
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 dim(exprs.blood)
 dim(exprs.buccal)
 ```
 
 For the sake of time, only a subset of the data is investigated for a relation with age. 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 aDMPs <- unique(
   read.table("https://raw.githubusercontent.com/roderickslieker/FOS18/master/aDMPs.txt",
              stringsAsFactors = F)[,1])
@@ -81,7 +81,7 @@ Note that in the chunk above, for buccal the values are still in M-values, which
  
 **4. What are the dimensions of the new datasets?**
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 dim(exprs.buccal)
 dim(exprs.blood)
 ```
@@ -91,7 +91,7 @@ dim(exprs.blood)
 
 We are now ready for the actual analysis. For this we use function to loop over the CpGs. Otherwise we would have to many tests manually while now we can run them at once. See the function below.
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 get.aDMP <- function(CpG, data.in, samplesheet, phenotype)
 {
   #Just to be sure make the phenotype numeric
@@ -109,7 +109,7 @@ get.aDMP <- function(CpG, data.in, samplesheet, phenotype)
 
 **5. Run the model for CpG *cg16867657*. What do you observe?**
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 fit.blood <- get.aDMP(CpG = "cg16867657", data.in = exprs.blood, 
                       samplesheet = pheno.blood, phenotype = "age:ch1")
 fit.buccal <- get.aDMP(CpG = "cg16867657", data.in = exprs.buccal, 
@@ -123,7 +123,7 @@ fit.buccal
 
 **6. Plot this one CpG (see code below). What do you observe? Is this locus really associated with age? Compare the slope of the line, what do you observe?**
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 getPlot <- function(CpG)
 {
   plotdata <- data.frame(Age = as.numeric(c(pheno.blood$`age:ch1`, 
@@ -143,7 +143,7 @@ getPlot("cg16867657")
 
 **7. Run the model for all CpGs. Look at the top results. What is the top locus for blood? Is it the same for buccal?**
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 res.blood <- lapply(aDMPs, get.aDMP, data.in=exprs.blood, 
                     samplesheet=pheno.blood, phenotype="age:ch1")
 res.buccal <- lapply(aDMPs, get.aDMP, data.in=exprs.buccal, 
@@ -164,7 +164,7 @@ head(results.buccal)
 
 **8. How many CpGs are significant in each of the tissues? Adjust for the number of tests performed!**
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 alpha <- 0.05/nrow(results.blood)
 
 results.blood.sign <- results.blood[results.blood$Pr..F. <= alpha,]
@@ -176,7 +176,7 @@ nrow(results.buccal.sign)
 
 **9. Plot the coefficients against each other. What do observe in this subset? **
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 results.blood <- results.blood[match(results.buccal$CpG, results.blood$CpG),]
 coefs <- data.frame(Blood  = results.blood$coef, Buccal = results.buccal$coef)
 rownames(coefs) <- results.blood$CpG
@@ -199,13 +199,13 @@ ggplot(coefs, aes(x=Blood, y=Buccal, col=Sign))+
 
 **10. How many are shared between blood and buccal?**
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 table(results.buccal.sign$CpG %in% results.blood.sign$CpG)
 ```
 
 **11. What do you notice in the figure of Q9 in terms of effect size? Look at the axis range. One could also add an effect size threshold to have biological relevant differences.Set the threshold to 2%/10years. How many are significant and how many overlap?**
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 results.blood.sign.eff <- results.blood.sign[results.blood.sign$coef >= 0.002,]
 results.buccal.sign.eff <- results.buccal.sign[results.buccal.sign$coef >= 0.002,]
 
